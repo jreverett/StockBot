@@ -19,15 +19,29 @@ client.on('message', function (message) {
     case Commands.PING:
       const timeTaken = Date.now() - message.createdTimestamp;
       message.reply(`pong! This message had a latency of ${timeTaken}ms.`);
+      break;
+    case Commands.SOURCE:
+      message.reply('https://github.com/jreverett/StockBot');
+      break;
+    case Commands.HELP:
+      const helpMessage = `\`\`\`prolog
+            StockBot Commands
+            '$!ping' - check bot latency
+            '$!source' - link to the source code for this bot
+            '$!help' - show list of commands
+            ✨ more commands coming soon ✨\`\`\``;
+      message.reply(helpMessage);
+      break;
     default:
       // probably a stock symbol so try and get data for it
       yahooFinance
         .quote({
           symbol: command,
-          modules: ['price', 'defaultKeyStatistics'],
+          modules: ['price', 'summaryDetail', 'defaultKeyStatistics'],
         })
         .then(function (quote) {
           const price = quote.price;
+          const summaryDetail = quote.summaryDetail;
           const defaultKS = quote.defaultKeyStatistics;
           const isMarketOpen = price.marketState === 'OPEN' ? true : false;
 
@@ -43,13 +57,18 @@ client.on('message', function (message) {
           const stockEmbed = new Discord.MessageEmbed()
             .setColor('#0099ff')
             .setTitle(`${price.currencySymbol}${price.symbol} - ${price.exchangeName}`)
+            .setURL(`https://finance.yahoo.com/quote/${command}`)
             .setDescription(price.longName)
             .addFields(
-                { name: 'Market Price', value: `${price.currencySymbol}${price.regularMarketOpen}` },
-                { name: 'Shares Float', value: defaultKS.floatShares, inline: true },
-                { name: 'Shares Short', value: defaultKS.sharesShort, inline: true },
-                { name: 'Market Status', value: isMarketOpen ? '```CSS\n  OPEN\n```' : '```prolog\n CLOSED\n```', inline: true }
+                { name: 'Market Price', value: `${price.currencySymbol}${price.regularMarketOpen.toLocaleString()}` },
+                { name: 'Shares Float', value: defaultKS.floatShares.toLocaleString(), inline: true },
+                { name: 'Shares Short', value: defaultKS.sharesShort.toLocaleString(), inline: true },
+                { name: 'Volume', value: summaryDetail.volume.toLocaleString(), inline: true },
+                { name: 'Market Status', value: isMarketOpen ? '```CSS\n  OPEN\n```' : '```prolog\n CLOSED\n```', inline: true },
+                { name: '\u200B', value: '\u200B', inline: true },
+                { name: '\u200B', value: '\u200B', inline: true },
             )
+            .setFooter(`Use ${Commands.HELP} for a list of commands`)
             .setTimestamp();
 
           message.reply(stockEmbed);
