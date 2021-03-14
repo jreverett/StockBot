@@ -1,0 +1,31 @@
+{
+  "name": "stockbot",
+  "version": "1.0.0",
+  "description": "Discord bot for showing stock information",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jreverett/StockBot.git"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "stock",
+    "shares",
+    "finance",
+    "javascript"
+  ],
+  "author": "Jamie Everett",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jreverett/StockBot/issues"
+  },
+  "homepage": "https://github.com/jreverett/StockBot#readme",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "yahoo-finance": "^0.3.7"
+  }
+}
