@@ -68,7 +68,7 @@ client.on('message', function (message) {
                 { name: '\u200B', value: '\u200B', inline: true },
                 { name: '\u200B', value: '\u200B', inline: true },
             )
-            .setFooter(`Use ${Commands.HELP} for a list of commands`)
+            .setFooter(`Use ${prefix}${Commands.HELP} for a list of commands`)
             .setTimestamp();
 
           message.reply(stockEmbed);
@@ -80,7 +80,7 @@ client.on('message', function (message) {
               message.reply("I couldn't find a stock with that symbol 😰");
             } else {
               message.reply(
-                'something went wrong ;_; ```' + `${err.message}` + '```'
+                `something went wrong ;_; \`\`\`${err.message}\`\`\``
               );
             }
           }
