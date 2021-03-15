@@ -1,0 +1,4 @@
+- Price alerts (subscription based?)
+- Post popular (recent) new stories or reddit posts
+- Add chart drawing
+- Add trend analysis and add this as a simple embed field
