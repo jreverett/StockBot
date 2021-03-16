@@ -83,7 +83,7 @@ client.on('message', (message) => {
           }
 
           const imageSearch = new Promise((resolve, reject) => {
-            gis(`${longName} logo`, (error, results) => {
+            gis(`${longName} logo inurl:.png`, (error, results) => {
               if (error) {
                 reject(error);
               } else {
