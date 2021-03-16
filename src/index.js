@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const yahooFinance = require('yahoo-finance');
+const gis = require('g-i-s');
 
 const auth = require('../auth.json');
 const Command = require('./command');
@@ -81,12 +82,25 @@ client.on('message', (message) => {
             return;
           }
 
-          // create and send an embed
-          // prettier-ignore
-          const stockEmbed = new Discord.MessageEmbed()
+          const imageSearch = new Promise((resolve, reject) => {
+            gis(`${longName} logo`, (error, results) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(results[0].url);
+              }
+            });
+          });
+
+          imageSearch.then((logoUrl) => {
+            // TODO: turn this into a component
+            // create and send an embed
+            // prettier-ignore
+            const stockEmbed = new Discord.MessageEmbed()
             .setColor('#0099ff')
             .setTitle(`${currencySymbol}${symbol} - ${exchangeName}`)
             .setURL(`https://finance.yahoo.com/quote/${userCommand}`)
+            .setThumbnail(logoUrl)
             .setDescription(longName)
             .addFields(
                 { name: 'Market Price', value: `${currencySymbol}${regularMarketPrice?.toLocaleString() ?? 'No Data'} | ${isPositive ? '▲' : '▼' } *${regularMarketChange.toFixed(2)} (${(regularMarketChangePercent*100).toFixed(2)}%)*` },
@@ -100,7 +114,8 @@ client.on('message', (message) => {
             .setFooter(`Use ${prefix}${Command.HELP} for a list of commands`)
             .setTimestamp();
 
-          message.reply(stockEmbed);
+            message.reply(stockEmbed);
+          });
         })
         .catch((err) => {
           if (err) {
