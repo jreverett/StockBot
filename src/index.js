@@ -56,7 +56,7 @@ client.on('message', (message) => {
         })
         .then((quote) => {
           const { price, summaryDetail, defaultKeyStatistics } = quote;
-          const isMarketOpen = price.marketState === 'OPEN' ? true : false;
+          const isMarketOpen = price.marketState === 'REGULAR' ? true : false;
 
           if (!price || !defaultKeyStatistics) {
             message.reply(
@@ -73,7 +73,7 @@ client.on('message', (message) => {
             .setURL(`https://finance.yahoo.com/quote/${userCommand}`)
             .setDescription(price.longName)
             .addFields(
-                { name: 'Market Price', value: `${price.currencySymbol}${price.regularMarketOpen.toLocaleString()}` },
+                { name: 'Market Price', value: `${price.currencySymbol}${price.regularMarketPrice.toLocaleString()}` },
                 { name: 'Shares Float', value: defaultKeyStatistics.floatShares.toLocaleString(), inline: true },
                 { name: 'Shares Short', value: defaultKeyStatistics.sharesShort.toLocaleString(), inline: true },
                 { name: 'Volume', value: summaryDetail.volume.toLocaleString(), inline: true },
