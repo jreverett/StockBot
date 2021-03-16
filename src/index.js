@@ -19,7 +19,7 @@ client.on('message', (message) => {
 
   switch (userCommand) {
     case Command.PING:
-      const timeTaken = message.createdTimestamp - Date.now();
+      const timeTaken = Date.now() - message.createdTimestamp;
       message.reply(`pong! This message had a latency of ${timeTaken}ms.`);
       break;
     case Command.SOURCE:
@@ -39,8 +39,9 @@ client.on('message', (message) => {
       const { username, discriminator } = message.author;
 
       if (`${username}#${discriminator}` === auth.admin) {
-        message.reply(`ok, shutting down 😴`);
-        process.exitCode = 0;
+        message.reply(`ok, shutting down 😴`).then(() => {
+          process.exit(0);
+        });
       } else {
         message.reply(`you don't have permission to do that, you cheeky scrub`);
       }
@@ -56,11 +57,26 @@ client.on('message', (message) => {
         })
         .then((quote) => {
           const { price, summaryDetail, defaultKeyStatistics } = quote;
-          const isMarketOpen = price.marketState === 'REGULAR' ? true : false;
+          const {
+            currencySymbol,
+            symbol,
+            exchangeName,
+            longName,
+            marketState,
+            regularMarketPrice,
+            regularMarketPreviousClose,
+            regularMarketChange,
+            regularMarketChangePercent,
+            regularMarketDayLow,
+            regularMarketDayHigh,
+          } = price;
+
+          const isPositive = regularMarketPrice > regularMarketPreviousClose;
+          const isMarketOpen = marketState === 'REGULAR' ? true : false;
 
           if (!price || !defaultKeyStatistics) {
             message.reply(
-              `couldn't find enough data on that stock 😬 (${userCommand.toUpperCase()})`
+              `couldn't find enough data on that stock 😬 ($${userCommand.toUpperCase()})`
             );
             return;
           }
@@ -69,17 +85,17 @@ client.on('message', (message) => {
           // prettier-ignore
           const stockEmbed = new Discord.MessageEmbed()
             .setColor('#0099ff')
-            .setTitle(`${price.currencySymbol}${price.symbol} - ${price.exchangeName}`)
+            .setTitle(`${currencySymbol}${symbol} - ${exchangeName}`)
             .setURL(`https://finance.yahoo.com/quote/${userCommand}`)
-            .setDescription(price.longName)
+            .setDescription(longName)
             .addFields(
-                { name: 'Market Price', value: `${price.currencySymbol}${price.regularMarketPrice.toLocaleString()}` },
-                { name: 'Shares Float', value: defaultKeyStatistics.floatShares.toLocaleString(), inline: true },
-                { name: 'Shares Short', value: defaultKeyStatistics.sharesShort.toLocaleString(), inline: true },
-                { name: 'Volume', value: summaryDetail.volume.toLocaleString(), inline: true },
-                { name: 'Market Status', value: isMarketOpen ? '```bash\n "OPEN"\n```' : '```prolog\n CLOSED\n```', inline: true },
-                { name: '\u200B', value: '\u200B', inline: true },
-                { name: '\u200B', value: '\u200B', inline: true },
+                { name: 'Market Price', value: `${currencySymbol}${regularMarketPrice?.toLocaleString() ?? 'No Data'} | ${isPositive ? '▲' : '▼' } *${regularMarketChange.toFixed(2)} (${(regularMarketChangePercent*100).toFixed(2)}%)*` },
+                { name: 'Shares Float', value: defaultKeyStatistics.floatShares?.toLocaleString() ?? 'No Data', inline: true },
+                { name: 'Shares Short', value: defaultKeyStatistics.sharesShort?.toLocaleString() ?? 'No Data', inline: true },
+                { name: 'Volume', value: summaryDetail.volume?.toLocaleString() ?? 'No Data', inline: true },
+                { name: 'Market Status', value: isMarketOpen ? 'OPEN' : 'CLOSED', inline: true },
+                { name: 'Day Low', value: `${currencySymbol}${regularMarketDayLow}`, inline: true },
+                { name: 'Day High', value: `${currencySymbol}${regularMarketDayHigh}`, inline: true },
             )
             .setFooter(`Use ${prefix}${Command.HELP} for a list of commands`)
             .setTimestamp();
@@ -90,7 +106,9 @@ client.on('message', (message) => {
           if (err) {
             // error object doesn't have an error code property, so this is a workaround
             if (err.message.includes('Not Found')) {
-              message.reply("I couldn't find a stock with that symbol 😰");
+              message.reply(
+                `I couldn't find a stock with that symbol 😰 ($${userCommand.toUpperCase()})`
+              );
             } else {
               message.reply(
                 `something went wrong ;_; \`\`\`${err.message}\`\`\``
