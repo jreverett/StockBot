@@ -37,9 +37,7 @@ client.on('message', (message) => {
       break;
     case Command.SHUTDOWN:
       // in case of emergency
-      const { username, discriminator } = message.author;
-
-      if (`${username}#${discriminator}` === auth.admin) {
+      if (message.author.id === auth.adminId) {
         message.reply(`ok, shutting down 😴`).then(() => {
           process.exit(0);
         });
@@ -97,22 +95,22 @@ client.on('message', (message) => {
             // create and send an embed
             // prettier-ignore
             const stockEmbed = new Discord.MessageEmbed()
-            .setColor('#0099ff')
-            .setTitle(`${currencySymbol}${symbol} - ${exchangeName}`)
-            .setURL(`https://finance.yahoo.com/quote/${userCommand}`)
-            .setThumbnail(logoUrl)
-            .setDescription(longName)
-            .addFields(
-                { name: 'Market Price', value: `${currencySymbol}${regularMarketPrice?.toLocaleString() ?? 'No Data'} | ${isPositive ? '▲' : '▼' } *${regularMarketChange.toFixed(2)} (${(regularMarketChangePercent*100).toFixed(2)}%)*` },
+              .setColor('#0099ff')
+              .setTitle(`${currencySymbol}${symbol} - ${exchangeName}`)
+              .setURL(`https://finance.yahoo.com/quote/${userCommand}`)
+              .setThumbnail(logoUrl)
+              .setDescription(longName)
+              .addFields(
+                { name: 'Market Price', value: `${currencySymbol}${regularMarketPrice?.toLocaleString() ?? 'No Data'} | ${isPositive ? '▲' : '▼'} *${regularMarketChange.toFixed(2)} (${(regularMarketChangePercent * 100).toFixed(2)}%)*` },
                 { name: 'Shares Float', value: defaultKeyStatistics.floatShares?.toLocaleString() ?? 'No Data', inline: true },
                 { name: 'Shares Short', value: defaultKeyStatistics.sharesShort?.toLocaleString() ?? 'No Data', inline: true },
                 { name: 'Volume', value: summaryDetail.volume?.toLocaleString() ?? 'No Data', inline: true },
                 { name: 'Market Status', value: isMarketOpen ? 'OPEN' : 'CLOSED', inline: true },
                 { name: 'Day Low', value: `${currencySymbol}${regularMarketDayLow}`, inline: true },
                 { name: 'Day High', value: `${currencySymbol}${regularMarketDayHigh}`, inline: true },
-            )
-            .setFooter(`Use ${prefix}${Command.HELP} for a list of commands`)
-            .setTimestamp();
+              )
+              .setFooter(`Use ${prefix}${Command.HELP} for a list of commands`)
+              .setTimestamp();
 
             message.reply(stockEmbed);
           });
