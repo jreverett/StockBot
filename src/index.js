@@ -3,7 +3,7 @@ const yahooFinance = require('yahoo-finance');
 
 const auth = require('../auth.json');
 const Command = require('./command');
-const { CreateEmbed } = require('./components/CreateEmbed')
+const { CreateEmbed } = require('./components/CreateEmbed');
 
 const client = new Discord.Client();
 
@@ -62,7 +62,9 @@ client.on('message', (message) => {
             return;
           }
 
-          const test = CreateEmbed(userCommand, quote).then(() => { message.reply("meme") });
+          CreateEmbed(userCommand, quote).then((embed) => {
+            message.reply(embed);
+          });
         })
         .catch((err) => {
           if (err) {
