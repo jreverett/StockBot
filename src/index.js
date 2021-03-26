@@ -12,6 +12,8 @@ const prefix = '$';
 /////////////////////////////////////////////////////////////
 // ON MESSAGE
 client.on('message', (message) => {
+  if (!message.guild.me.hasPermission('SEND_MESSAGES')) return;
+
   if (message.author.bot || !message.content.startsWith(prefix)) return;
 
   const commandBody = message.content.slice(prefix.length);
