@@ -1,20 +1,18 @@
 const Discord = require('discord.js');
 const yahooFinance = require('yahoo-finance');
-const gis = require('g-i-s');
 
 const auth = require('../auth.json');
 const Command = require('./command');
+const { CreateEmbed } = require('./components/CreateEmbed')
 
 const client = new Discord.Client();
-
-const prefix = '$';
 
 /////////////////////////////////////////////////////////////
 // ON MESSAGE
 client.on('message', (message) => {
-  if (message.author.bot || !message.content.startsWith(prefix)) return;
+  if (message.author.bot || !message.content.startsWith(Command.PREFIX)) return;
 
-  const commandBody = message.content.slice(prefix.length);
+  const commandBody = message.content.slice(Command.PREFIX.length);
   const args = commandBody.split(' ');
   const userCommand = args.shift().toLowerCase();
 
@@ -55,23 +53,7 @@ client.on('message', (message) => {
           modules: ['price', 'summaryDetail', 'defaultKeyStatistics'],
         })
         .then((quote) => {
-          const { price, summaryDetail, defaultKeyStatistics } = quote;
-          const {
-            currencySymbol,
-            symbol,
-            exchangeName,
-            longName,
-            marketState,
-            regularMarketPrice,
-            regularMarketPreviousClose,
-            regularMarketChange,
-            regularMarketChangePercent,
-            regularMarketDayLow,
-            regularMarketDayHigh,
-          } = price;
-
-          const isPositive = regularMarketPrice > regularMarketPreviousClose;
-          const isMarketOpen = marketState === 'REGULAR' ? true : false;
+          const { price, defaultKeyStatistics } = quote;
 
           if (!price || !defaultKeyStatistics) {
             message.reply(
@@ -80,40 +62,7 @@ client.on('message', (message) => {
             return;
           }
 
-          const imageSearch = new Promise((resolve, reject) => {
-            gis(`${longName} logo +.png -.svg`, (error, results) => {
-              if (error) {
-                reject(error);
-              } else {
-                resolve(results[0].url);
-              }
-            });
-          });
-
-          imageSearch.then((logoUrl) => {
-            // TODO: turn this into a component
-            // create and send an embed
-            // prettier-ignore
-            const stockEmbed = new Discord.MessageEmbed()
-              .setColor('#0099ff')
-              .setTitle(`${currencySymbol}${symbol} - ${exchangeName}`)
-              .setURL(`https://finance.yahoo.com/quote/${userCommand}`)
-              .setThumbnail(logoUrl)
-              .setDescription(longName)
-              .addFields(
-                { name: 'Market Price', value: `${currencySymbol}${regularMarketPrice?.toLocaleString() ?? 'No Data'} | ${isPositive ? '▲' : '▼'} *${regularMarketChange.toFixed(2)} (${(regularMarketChangePercent * 100).toFixed(2)}%)*` },
-                { name: 'Shares Float', value: defaultKeyStatistics.floatShares?.toLocaleString() ?? 'No Data', inline: true },
-                { name: 'Shares Short', value: defaultKeyStatistics.sharesShort?.toLocaleString() ?? 'No Data', inline: true },
-                { name: 'Volume', value: summaryDetail.volume?.toLocaleString() ?? 'No Data', inline: true },
-                { name: 'Market Status', value: isMarketOpen ? 'OPEN' : 'CLOSED', inline: true },
-                { name: 'Day Low', value: `${currencySymbol}${regularMarketDayLow}`, inline: true },
-                { name: 'Day High', value: `${currencySymbol}${regularMarketDayHigh}`, inline: true },
-              )
-              .setFooter(`Use ${prefix}${Command.HELP} for a list of commands`)
-              .setTimestamp();
-
-            message.reply(stockEmbed);
-          });
+          const test = CreateEmbed(userCommand, quote).then(() => { message.reply("meme") });
         })
         .catch((err) => {
           if (err) {
