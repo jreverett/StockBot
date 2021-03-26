@@ -1,4 +1,7 @@
+- Add parameter to specify desired currency (then convert if needed)
+    - If converted, add exchange rate field
 - Price alerts (subscription based?)
 - Post popular (recent) new stories or reddit posts
 - Add chart drawing (with range params (e.g. 1week, 1year, max))
+    - Ability to overlay different charts? (w/ colour key)
 - Add trend analysis and add this as a simple embed field
