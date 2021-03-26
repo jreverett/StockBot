@@ -10,6 +10,8 @@ const client = new Discord.Client();
 /////////////////////////////////////////////////////////////
 // ON MESSAGE
 client.on('message', (message) => {
+  if (!message.guild.me.hasPermission('SEND_MESSAGES')) return;
+  
   if (message.author.bot || !message.content.startsWith(Command.PREFIX)) return;
 
   const commandBody = message.content.slice(Command.PREFIX.length);
