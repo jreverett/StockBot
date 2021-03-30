@@ -1,5 +1,6 @@
 module.exports = Command = {
-  PREFIX: '$',
+  COMMAND_PREFIX: '$',
+  ARGUMENT_PREFIX: '-',
 
   PING: '!ping',
   SOURCE: '!source',
