@@ -11,8 +11,10 @@ const client = new Discord.Client();
 /////////////////////////////////////////////////////////////
 // ON MESSAGE
 client.on('message', (message) => {
-  if (!message.guild.me.hasPermission('SEND_MESSAGES')) return;
+  // return if bot is in a server and doesn't have send message permissions
+  if (message.guild && !message.guild.me.hasPermission('SEND_MESSAGES')) return;
 
+  // return if the sender of this message it a bot or the message isn't a command
   if (message.author.bot || !message.content.startsWith(Command.COMMAND_PREFIX))
     return;
 
