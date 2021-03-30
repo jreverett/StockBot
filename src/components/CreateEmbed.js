@@ -2,12 +2,13 @@ const Discord = require('discord.js');
 const gis = require('g-i-s');
 
 const Command = require('../command');
+const { FindCurrencySymbol } = require('./FindCurrencySymbol');
 
 function CreateEmbed(userCommand, quote) {
   return new Promise((resolve, reject) => {
     const { price, summaryDetail, defaultKeyStatistics } = quote;
     const {
-      currencySymbol,
+      targetCurrency,
       symbol,
       exchangeName,
       longName,
@@ -19,6 +20,9 @@ function CreateEmbed(userCommand, quote) {
       regularMarketDayLow,
       regularMarketDayHigh,
     } = price;
+
+    let { currencySymbol } = price;
+    if (targetCurrency) currencySymbol = FindCurrencySymbol(targetCurrency);
 
     const isPositive = regularMarketPrice > regularMarketPreviousClose;
     const isMarketOpen = marketState === 'REGULAR' ? true : false;
@@ -42,15 +46,15 @@ function CreateEmbed(userCommand, quote) {
         .setThumbnail(logoUrl)
         .setDescription(longName)
         .addFields(
-            { name: 'Market Price', value: `${currencySymbol}${regularMarketPrice?.toLocaleString() ?? 'No Data'} | ${isPositive ? '▲' : '▼'} *${regularMarketChange.toFixed(2)} (${(regularMarketChangePercent * 100).toFixed(2)}%)*` },
+            { name: 'Market Price', value: `${currencySymbol}${regularMarketPrice?.toFixed(2) ?? 'No Data'} | ${isPositive ? '▲' : '▼'} *${regularMarketChange.toFixed(2)} (${(regularMarketChangePercent * 100).toFixed(2)}%)*` },
             { name: 'Shares Float', value: defaultKeyStatistics.floatShares?.toLocaleString() ?? 'No Data', inline: true },
             { name: 'Shares Short', value: defaultKeyStatistics.sharesShort?.toLocaleString() ?? 'No Data', inline: true },
             { name: 'Volume', value: summaryDetail.volume?.toLocaleString() ?? 'No Data', inline: true },
             { name: 'Market Status', value: isMarketOpen ? 'OPEN' : 'CLOSED', inline: true },
-            { name: 'Day Low', value: `${currencySymbol}${regularMarketDayLow}`, inline: true },
-            { name: 'Day High', value: `${currencySymbol}${regularMarketDayHigh}`, inline: true },
+            { name: 'Day Low', value: `${currencySymbol}${regularMarketDayLow.toFixed(2)}`, inline: true },
+            { name: 'Day High', value: `${currencySymbol}${regularMarketDayHigh.toFixed(2)}`, inline: true },
         )
-        .setFooter(`Use ${Command.PREFIX}${Command.HELP} for a list of commands`)
+        .setFooter(`Use ${Command.COMMAND_PREFIX}${Command.HELP} for a list of commands`)
         .setTimestamp();
 
       resolve(embed);

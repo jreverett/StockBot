@@ -3,6 +3,7 @@ const yahooFinance = require('yahoo-finance');
 
 const auth = require('../auth.json');
 const Command = require('./command');
+const { ConvertCurrency } = require('./components/ConvertCurrency');
 const { CreateEmbed } = require('./components/CreateEmbed');
 
 const client = new Discord.Client();
@@ -11,12 +12,20 @@ const client = new Discord.Client();
 // ON MESSAGE
 client.on('message', (message) => {
   if (!message.guild.me.hasPermission('SEND_MESSAGES')) return;
-  
-  if (message.author.bot || !message.content.startsWith(Command.PREFIX)) return;
 
-  const commandBody = message.content.slice(Command.PREFIX.length);
+  if (message.author.bot || !message.content.startsWith(Command.COMMAND_PREFIX))
+    return;
+
+  const commandBody = message.content.slice(Command.COMMAND_PREFIX.length);
   const args = commandBody.split(' ');
   const userCommand = args.shift().toLowerCase();
+
+  let commandArgs = [];
+  args.some((arg) => {
+    if (!arg.startsWith(Command.ARGUMENT_PREFIX)) return true;
+    arg = arg.slice(Command.ARGUMENT_PREFIX.length);
+    commandArgs.push(arg);
+  });
 
   switch (userCommand) {
     case Command.PING:
@@ -55,7 +64,14 @@ client.on('message', (message) => {
           modules: ['price', 'summaryDetail', 'defaultKeyStatistics'],
         })
         .then((quote) => {
-          const { price, defaultKeyStatistics } = quote;
+          let { price, defaultKeyStatistics } = quote;
+          const {
+            regularMarketPrice,
+            regularMarketDayLow,
+            regularMarketDayHigh,
+            regularMarketPreviousClose,
+            currency,
+          } = price;
 
           if (!price || !defaultKeyStatistics) {
             message.reply(
@@ -64,9 +80,38 @@ client.on('message', (message) => {
             return;
           }
 
-          CreateEmbed(userCommand, quote).then((embed) => {
-            message.reply(embed);
-          });
+          const targetCurrency = commandArgs[0]?.toUpperCase();
+
+          // CURRENCY CONVERSIONS
+          const valuesToConvert = {
+            regularMarketPrice: regularMarketPrice,
+            regularMarketDayLow: regularMarketDayLow,
+            regularMarketDayHigh: regularMarketDayHigh,
+            regularMarketPreviousClose: regularMarketPreviousClose,
+          };
+
+          if (targetCurrency) {
+            ConvertCurrency(valuesToConvert, currency, targetCurrency)
+              .then((convertedValues) => {
+                quote.price = {
+                  ...price,
+                  ...convertedValues,
+                  targetCurrency: targetCurrency,
+                };
+
+                CreateEmbed(userCommand, quote).then((embed) => {
+                  message.reply(embed);
+                });
+              })
+              .catch((err) => {
+                message.reply(`${err}`);
+              });
+          } else {
+            // TODO: refactor repeated code
+            CreateEmbed(userCommand, quote).then((embed) => {
+              message.reply(embed);
+            });
+          }
         })
         .catch((err) => {
           if (err) {
