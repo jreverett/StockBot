@@ -22,7 +22,7 @@ function ConvertCurrency(valuesToConvert, fromCurrency, toCurrency) {
             .to(toCurrency)
             .toFixed(2);
 
-          valuesToConvert[key] = parseInt(convertedValue);
+          valuesToConvert[key] = parseFloat(convertedValue);
         });
 
         resolve(valuesToConvert);
